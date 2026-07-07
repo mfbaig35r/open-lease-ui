@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:embedded": "NEXT_PUBLIC_API_URL= next build",
-    "build:hosted": "NEXT_PUBLIC_API_URL= NEXT_PUBLIC_WORKBENCH_HOSTED=1 next build",
+    "build:hosted": "NEXT_PUBLIC_WORKBENCH_HOSTED=1 next build",
     "bundle": "pnpm build:embedded && rm -rf ../open-lease/src/gpu_orchestrator/web && cp -r out ../open-lease/src/gpu_orchestrator/web",
     "start": "next start",
     "lint": "eslint"
