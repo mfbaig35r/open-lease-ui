@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 const ITEMS: { label: string; href: string | null }[] = [
   { label: "Overview", href: "/" },
   { label: "Deploy", href: "/deploy" },
-  { label: "Playground", href: null },
+  { label: "Playground", href: "/playground" },
   { label: "Costs", href: null },
 ];
 

@@ -4,8 +4,8 @@ A local, visual workbench for [open-lease](https://github.com/mfbaig35r/open-lea
 deployments come up and run, and use the models you spin up. Another thin interface over the same
 core, talking to the REST API over HTTP.
 
-> Slice 1: the live Overview. Deployment detail, the deploy wizard, and the chat playground follow.
-> See [docs/requirements.md](docs/requirements.md) for the full plan.
+> Overview, deployment detail, deploy wizard, and chat playground are all in. Next: the static
+> export + a `gpu ui` launcher. See [docs/requirements.md](docs/requirements.md) for the full plan.
 
 ## Run it
 
