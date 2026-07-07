@@ -2,7 +2,9 @@
 import type {
   CostRecord,
   Deployment,
+  DeployBody,
   Event,
+  GpuAvailability,
   HealthStatus,
   ModelSpec,
   ProviderInfo,
@@ -66,6 +68,30 @@ async function send<T>(method: "POST" | "DELETE", path: string): Promise<T | nul
   return res.status === 204 ? null : (res.json() as Promise<T>);
 }
 
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError(`cannot reach the API at ${API_URL}`, 0);
+  }
+  if (!res.ok) {
+    const sentence = await res
+      .json()
+      .then((b) => b?.error as string | undefined)
+      .catch(() => undefined);
+    throw new ApiError(sentence ?? `request failed (${res.status})`, res.status);
+  }
+  return res.json() as Promise<T>;
+}
+
 export const api = {
   listDeployments: (includeStopped = false) =>
     get<Deployment[]>(`/deployments?include_stopped=${includeStopped}`),
@@ -76,6 +102,13 @@ export const api = {
   costs: () => get<CostRecord[]>(`/costs`),
   models: () => get<ModelSpec[]>(`/models`),
   providers: () => get<ProviderInfo[]>(`/providers`),
+  availability: (params: { model_id?: string; gpu?: string }) => {
+    const q = new URLSearchParams();
+    if (params.model_id) q.set("model_id", params.model_id);
+    if (params.gpu) q.set("gpu", params.gpu);
+    return get<GpuAvailability[]>(`/availability?${q.toString()}`);
+  },
+  deploy: (body: DeployBody) => postJson<Deployment>(`/deployments`, body),
   stop: (id: string) => send<Deployment>("POST", `/deployments/${id}/stop`),
   restart: (id: string) => send<Deployment>("POST", `/deployments/${id}/restart`),
   delete: (id: string) => send<null>("DELETE", `/deployments/${id}`),

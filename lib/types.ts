@@ -126,7 +126,32 @@ export interface ModelSpec {
   license: string;
 }
 
+export interface GpuType {
+  id: string;
+  name: string;
+  memory_gb: number;
+  hourly_usd: number;
+}
+
 export interface ProviderInfo {
   name: string;
-  gpu_types: { id: string; name: string; memory_gb: number; hourly_usd: number }[];
+  gpu_types: GpuType[];
+}
+
+export interface GpuAvailability {
+  data_center_id: string;
+  gpu_type_id: string;
+  available: boolean;
+  stock_status: string | null;
+}
+
+export interface DeployBody {
+  model_id?: string;
+  hf_repo?: string;
+  provider?: string;
+  gpu?: string;
+  context?: number;
+  image?: string;
+  disk?: number;
+  wait?: boolean;
 }

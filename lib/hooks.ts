@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
-import type { CostRecord } from "./types";
+import type { CostRecord, DeployBody } from "./types";
 
 // The store is the source of truth and the daemon writes to it, so polling reflects reality within
 // a tick. ~1s on the deployment list keeps the Overview feeling live; costs update a little slower.
@@ -58,6 +58,31 @@ export function useHealth(id: string) {
     queryFn: () => api.health(id),
     refetchInterval: 5000,
     enabled: !!id,
+  });
+}
+
+export function useModels() {
+  return useQuery({ queryKey: ["models"], queryFn: () => api.models(), staleTime: 60_000 });
+}
+
+export function useProviders() {
+  return useQuery({ queryKey: ["providers"], queryFn: () => api.providers(), staleTime: 60_000 });
+}
+
+export function useAvailability(params: { model_id?: string; gpu?: string }) {
+  return useQuery({
+    queryKey: ["availability", params.model_id ?? "", params.gpu ?? ""],
+    queryFn: () => api.availability(params),
+    enabled: !!(params.model_id || params.gpu),
+    refetchInterval: 10_000,
+  });
+}
+
+export function useDeploy() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: DeployBody) => api.deploy(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["deployments"] }),
   });
 }
 
