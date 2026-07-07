@@ -7,17 +7,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-full">
       <aside className="flex w-56 shrink-0 flex-col border-r border-rule px-4 py-6">
-        <div className="mb-8 flex items-center gap-2.5 px-2">
+        <a
+          href="https://openlease.canonicalresearch.dev"
+          className="group mb-8 flex items-center gap-2.5 px-2"
+          title="OpenLease home"
+        >
           <GpuIcon className="h-5 w-5 text-accent-soft" />
           <div className="leading-none">
-            <p className="font-mono text-label tracking-[0.04em] text-ink-strong uppercase">
+            <p className="font-mono text-label tracking-[0.04em] text-ink-strong uppercase transition-colors group-hover:text-accent-soft">
               OpenLease
             </p>
             <p className="mt-1 font-mono text-label tracking-[0.04em] text-ink-muted uppercase">
               Workbench
             </p>
           </div>
-        </div>
+        </a>
         <Nav />
         <div className="mt-auto">
           <SidebarConnection />
