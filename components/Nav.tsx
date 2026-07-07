@@ -13,7 +13,7 @@ const ITEMS: { label: string; href: string | null }[] = [
 
 export function Nav() {
   const pathname = usePathname();
-  const base = "flex items-center justify-between rounded-sm px-2 py-1.5 text-small";
+  const base = "flex items-center justify-between rounded-md px-2.5 py-1.5 text-small";
 
   return (
     <nav className="space-y-1">

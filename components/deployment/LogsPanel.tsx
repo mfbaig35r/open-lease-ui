@@ -24,7 +24,7 @@ export function LogsPanel({ id }: { id: string }) {
           no logs available from this provider
         </p>
       ) : (
-        <pre className="max-h-[360px] overflow-auto rounded-sm bg-canvas p-3 font-mono text-label leading-relaxed text-ink">
+        <pre className="max-h-[360px] overflow-auto rounded-md bg-canvas p-3 font-mono text-label leading-relaxed text-ink">
           {lines.join("\n")}
         </pre>
       )}

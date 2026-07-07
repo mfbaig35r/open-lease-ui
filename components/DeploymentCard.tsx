@@ -35,7 +35,7 @@ export function DeploymentCard({ dep, cost }: { dep: Deployment; cost?: CostReco
   return (
     <Link
       href={`/deployment?id=${dep.id}`}
-      className="block rounded-sm border border-rule bg-surface p-5 transition-colors hover:border-rule-strong"
+      className="block rounded-lg border border-rule bg-surface p-5 transition-colors hover:border-rule-strong"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

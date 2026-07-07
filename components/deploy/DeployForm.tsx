@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/cn";
 import { formatUSD } from "@/lib/format";
 import { useAvailability, useDeploy, useModels, useProviders } from "@/lib/hooks";
@@ -54,12 +55,9 @@ export function DeployForm() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-h1 font-semibold text-ink-strong">Deploy</h1>
-      <p className="mt-1 text-body text-ink-muted">
-        A catalog model, or any vLLM-servable Hugging Face repo.
-      </p>
+      <PageHeader title="Deploy" sub="A catalog model, or any vLLM-servable Hugging Face repo." />
 
-      <div className="mt-8 space-y-6">
+      <div className="space-y-5">
         <Segmented mode={mode} onChange={setMode} />
 
         {mode === "catalog" ? (
@@ -74,7 +72,12 @@ export function DeployForm() {
           </Field>
         ) : (
           <Field label="Hugging Face repo">
-            <Input value={hfRepo} onChange={setHfRepo} placeholder="e.g. Qwen/Qwen3-14B" mono />
+            <input
+              value={hfRepo}
+              onChange={(e) => setHfRepo(e.target.value)}
+              placeholder="e.g. Qwen/Qwen3-14B"
+              className="ol-control"
+            />
           </Field>
         )}
 
@@ -96,14 +99,19 @@ export function DeployForm() {
             <button
               type="button"
               onClick={() => setAdvanced((v) => !v)}
-              className="font-mono text-label tracking-[0.04em] text-ink-muted uppercase hover:text-ink"
+              className="ol-label transition-colors hover:text-ink"
             >
               {advanced ? "− advanced" : "+ advanced"}
             </button>
             {advanced && (
               <div className="mt-3">
                 <Field label="Context length" hint="omit to let vLLM auto-detect">
-                  <Input value={context} onChange={setContext} placeholder="e.g. 32768" mono />
+                  <input
+                    value={context}
+                    onChange={(e) => setContext(e.target.value)}
+                    placeholder="e.g. 32768"
+                    className="ol-control"
+                  />
                 </Field>
               </div>
             )}
@@ -112,7 +120,7 @@ export function DeployForm() {
 
         {/* Capacity + rate */}
         {effectiveGpu && (
-          <div className="rounded-sm border border-rule bg-surface p-4 text-small">
+          <div className="rounded-lg border border-rule bg-surface p-4 text-small">
             <div className="flex items-center justify-between">
               <span className="text-ink-muted">Rate</span>
               <span className="font-mono tabular-nums text-ink-strong">
@@ -145,12 +153,12 @@ export function DeployForm() {
           <p className="text-small text-danger">{(deploy.error as Error).message}</p>
         )}
 
-        <div className="flex items-center gap-4 pt-2">
+        <div className="flex items-center gap-4 pt-1">
           <button
             type="button"
             disabled={!valid || deploy.isPending}
             onClick={onSubmit}
-            className="rounded-sm bg-accent px-5 py-2.5 text-small font-medium text-canvas transition-colors hover:bg-accent-hover disabled:opacity-40"
+            className="ol-btn"
           >
             {deploy.isPending ? "Deploying…" : "Deploy"}
           </button>
@@ -169,14 +177,14 @@ function Segmented({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void
     { id: "adhoc", label: "Any HF model" },
   ];
   return (
-    <div className="inline-flex rounded-sm border border-rule p-0.5">
+    <div className="inline-flex rounded-md border border-rule p-1">
       {opts.map((o) => (
         <button
           key={o.id}
           type="button"
           onClick={() => onChange(o.id)}
           className={cn(
-            "rounded-sm px-4 py-1.5 text-small transition-colors",
+            "flex h-8 items-center rounded px-3 text-small transition-colors",
             mode === o.id ? "bg-surface text-ink-strong" : "text-ink-muted hover:text-ink",
           )}
         >
@@ -199,18 +207,13 @@ function Field({
   return (
     <label className="block">
       <div className="mb-2 flex items-baseline justify-between">
-        <span className="font-mono text-label tracking-[0.04em] text-ink-muted uppercase">
-          {label}
-        </span>
+        <span className="ol-label">{label}</span>
         {hint && <span className="font-mono text-label text-ink-muted">{hint}</span>}
       </div>
       {children}
     </label>
   );
 }
-
-const CTRL =
-  "w-full rounded-sm border border-rule-strong bg-canvas px-3 py-2 text-small text-ink-strong outline-none focus:border-accent-soft";
 
 function Select({
   value,
@@ -224,32 +227,11 @@ function Select({
   children: React.ReactNode;
 }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className={CTRL}>
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="ol-control">
       <option value="" disabled>
         {placeholder}
       </option>
       {children}
     </select>
-  );
-}
-
-function Input({
-  value,
-  onChange,
-  placeholder,
-  mono,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  mono?: boolean;
-}) {
-  return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={cn(CTRL, mono && "font-mono")}
-    />
   );
 }

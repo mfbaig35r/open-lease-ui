@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/cn";
 import type { ChatMessage } from "@/lib/chat";
 import { streamChat } from "@/lib/chat";
@@ -61,14 +62,11 @@ export function Playground() {
   if (ready.length === 0)
     return (
       <div>
-        <h1 className="text-h1 font-semibold text-ink-strong">Playground</h1>
-        <div className="mt-8 rounded-sm border border-dashed border-rule bg-surface/40 p-10 text-center">
-          <p className="text-h3 font-semibold text-ink-strong">No ready deployments</p>
+        <PageHeader title="Playground" />
+        <div className="rounded-lg border border-dashed border-rule bg-surface/40 p-10 text-center">
+          <p className="text-h3 text-ink-strong">No ready deployments</p>
           <p className="mt-2 text-body text-ink-muted">Spin up a model to chat with it.</p>
-          <Link
-            href="/deploy"
-            className="mt-4 inline-block rounded-sm bg-accent px-5 py-2.5 text-small font-medium text-canvas transition-colors hover:bg-accent-hover"
-          >
+          <Link href="/deploy" className="ol-btn mt-5 inline-flex">
             Deploy a model
           </Link>
         </div>
@@ -77,47 +75,47 @@ export function Playground() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col">
-      <header className="mb-4 flex items-center justify-between gap-4">
-        <h1 className="text-h1 font-semibold text-ink-strong">Playground</h1>
-        <div className="flex items-center gap-3">
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setMessages([])}
-              className="font-mono text-label tracking-[0.04em] text-ink-muted uppercase hover:text-ink"
+      <PageHeader
+        title="Playground"
+        actions={
+          <div className="flex items-center gap-3">
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setMessages([])}
+                className="ol-label transition-colors hover:text-ink"
+              >
+                clear
+              </button>
+            )}
+            <select
+              value={effective?.id ?? ""}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="ol-control w-auto"
             >
-              clear
-            </button>
-          )}
-          <select
-            value={effective?.id ?? ""}
-            onChange={(e) => setSelectedId(e.target.value)}
-            className="rounded-sm border border-rule-strong bg-canvas px-3 py-1.5 text-small text-ink-strong outline-none focus:border-accent-soft"
-          >
-            {ready.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.model_id}
-              </option>
-            ))}
-          </select>
-        </div>
-      </header>
+              {ready.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.model_id}
+                </option>
+              ))}
+            </select>
+          </div>
+        }
+      />
 
       <div
         ref={scrollRef}
-        className="flex-1 space-y-5 overflow-auto rounded-sm border border-rule bg-surface p-5"
+        className="flex-1 space-y-5 overflow-auto rounded-lg border border-rule bg-surface p-5"
       >
         {messages.length === 0 ? (
           <p className="font-mono text-small text-ink-muted">
-            Chatting with{" "}
-            <span className="text-accent-soft">{effective?.model_id}</span>. Say something.
+            Chatting with <span className="text-accent-soft">{effective?.model_id}</span>. Say
+            something.
           </p>
         ) : (
           messages.map((m, i) => (
             <div key={i}>
-              <p className="mb-1 font-mono text-label tracking-[0.04em] text-ink-muted uppercase">
-                {m.role === "user" ? "You" : effective?.model_id}
-              </p>
+              <p className="ol-label mb-1">{m.role === "user" ? "You" : effective?.model_id}</p>
               <p
                 className={cn(
                   "text-body whitespace-pre-wrap",
@@ -143,25 +141,20 @@ export function Playground() {
               send();
             }
           }}
-          rows={2}
+          rows={1}
           placeholder="Message the model…  (Enter to send, Shift+Enter for a newline)"
-          className="flex-1 resize-none rounded-sm border border-rule-strong bg-canvas px-3 py-2 text-small text-ink-strong outline-none focus:border-accent-soft"
+          className="ol-control flex-1"
         />
         {streaming ? (
           <button
             type="button"
             onClick={() => abortRef.current?.abort()}
-            className="rounded-sm border border-rule-strong px-5 py-2.5 text-small text-ink transition-colors hover:border-danger hover:text-danger"
+            className="ol-btn ol-btn-ghost ol-btn-danger"
           >
             Stop
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={send}
-            disabled={!input.trim()}
-            className="rounded-sm bg-accent px-5 py-2.5 text-small font-medium text-canvas transition-colors hover:bg-accent-hover disabled:opacity-40"
-          >
+          <button type="button" onClick={send} disabled={!input.trim()} className="ol-btn">
             Send
           </button>
         )}

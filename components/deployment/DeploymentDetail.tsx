@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
-import { formatDuration, formatUSD, shortEndpoint } from "@/lib/format";
+import { formatDuration, formatUSD } from "@/lib/format";
 import { useCosts, useDeployment, useDeploymentActions } from "@/lib/hooks";
 import { isBilling } from "@/lib/state";
 import { useNow } from "@/lib/useNow";
 import { StateBadge } from "../StateBadge";
+import { EndpointDocs } from "./EndpointDocs";
 import { EventFeed } from "./EventFeed";
 import { HealthPanel } from "./HealthPanel";
 import { LogsPanel } from "./LogsPanel";
@@ -52,12 +53,7 @@ function ActionBtn({
       type="button"
       onClick={onClick}
       disabled={busy}
-      className={cn(
-        "rounded-sm border px-3 py-1.5 text-small transition-colors disabled:opacity-50",
-        danger
-          ? "border-rule-strong text-danger hover:border-danger"
-          : "border-rule-strong text-ink hover:border-accent-soft hover:text-ink-strong",
-      )}
+      className={cn("ol-btn ol-btn-ghost", danger && "ol-btn-danger")}
     >
       {busy ? "…" : children}
     </button>
@@ -90,7 +86,7 @@ export function DeploymentDetail({ id }: { id: string }) {
   const endMs = active ? now : Date.parse(cost?.stopped_at ?? dep.updated_at);
   const accrued =
     cost != null ? (cost.gpu_hourly_usd * Math.max(0, endMs - startMs)) / 3_600_000 : null;
-  const host = shortEndpoint(dep.endpoint_url);
+  const serving = dep.observed_state === "ready";
 
   const onDelete = () => {
     if (!confirmDelete) {
@@ -128,7 +124,7 @@ export function DeploymentDetail({ id }: { id: string }) {
         </div>
       </header>
 
-      <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-5 rounded-sm border border-rule bg-surface p-5 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-5 rounded-lg border border-rule bg-surface p-5 sm:grid-cols-4">
         <Fact label="GPU" value={dep.instance?.gpu_type ?? dep.profile.recommended_gpu} />
         <Fact
           label="Uptime"
@@ -140,11 +136,12 @@ export function DeploymentDetail({ id }: { id: string }) {
           tone={active ? "text-accent" : undefined}
         />
         <Fact label="Provider" value={dep.provider} />
-        <Fact label="Endpoint" value={host ?? "—"} />
         <Fact label="Context" value={dep.context_window ? String(dep.context_window) : "auto"} />
         <Fact label="Image" value={dep.profile.image} />
         <Fact label="Deployment" value={dep.id} />
       </div>
+
+      <EndpointDocs dep={dep} serving={serving} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">

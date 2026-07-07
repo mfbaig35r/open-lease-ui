@@ -5,6 +5,7 @@ import { useCosts, useDeployments } from "@/lib/hooks";
 import { isBilling } from "@/lib/state";
 import type { Deployment } from "@/lib/types";
 import { DeploymentCard } from "./DeploymentCard";
+import { PageHeader } from "./PageHeader";
 
 function orderedActiveFirst(a: Deployment, b: Deployment): number {
   const ba = isBilling(a.observed_state) ? 0 : 1;
@@ -22,17 +23,22 @@ export function Overview() {
 
   return (
     <div>
-      <header className="mb-8 flex items-end justify-between">
-        <div>
-          <h1 className="text-h1 font-semibold text-ink-strong">Overview</h1>
-          <p className="mt-1 font-mono text-label tracking-[0.04em] text-ink-muted uppercase">
+      <PageHeader
+        title="Overview"
+        sub={
+          <span className="ol-label">
             {deployments.isError
               ? "disconnected"
               : `${rows.length} deployment${rows.length === 1 ? "" : "s"} · ${live} live`}
-          </p>
-        </div>
-        <ConnectionDot ok={!deployments.isError && !deployments.isLoading} loading={deployments.isLoading} />
-      </header>
+          </span>
+        }
+        actions={
+          <ConnectionDot
+            ok={!deployments.isError && !deployments.isLoading}
+            loading={deployments.isLoading}
+          />
+        }
+      />
 
       {deployments.isError ? (
         <Disconnected message={(deployments.error as Error).message} />
@@ -70,13 +76,13 @@ function ConnectionDot({ ok, loading }: { ok: boolean; loading: boolean }) {
 
 function Disconnected({ message }: { message: string }) {
   return (
-    <div className="rounded-sm border border-rule bg-surface p-8">
-      <p className="text-h3 font-semibold text-ink-strong">Cannot reach the API</p>
+    <div className="rounded-lg border border-rule bg-surface p-8">
+      <p className="text-h3 text-ink-strong">Cannot reach the API</p>
       <p className="mt-2 max-w-[52ch] text-body text-ink-muted">{message}</p>
       <p className="mt-4 font-mono text-small text-ink-muted">
         Start the backend with{" "}
-        <code className="rounded-sm bg-canvas px-1.5 py-0.5 text-accent-soft">gpu serve</code>, then
-        set <code className="rounded-sm bg-canvas px-1.5 py-0.5 text-accent-soft">NEXT_PUBLIC_API_URL</code>{" "}
+        <code className="rounded bg-canvas px-1.5 py-0.5 text-accent-soft">gpu serve</code>, then set{" "}
+        <code className="rounded bg-canvas px-1.5 py-0.5 text-accent-soft">NEXT_PUBLIC_API_URL</code>{" "}
         if it is not on {API_URL}.
       </p>
     </div>
@@ -85,13 +91,11 @@ function Disconnected({ message }: { message: string }) {
 
 function Empty() {
   return (
-    <div className="rounded-sm border border-dashed border-rule bg-surface/40 p-10 text-center">
-      <p className="text-h3 font-semibold text-ink-strong">Nothing running</p>
-      <p className="mt-2 text-body text-ink-muted">
-        Deploy a model to watch it come up here.
-      </p>
+    <div className="rounded-lg border border-dashed border-rule bg-surface/40 p-10 text-center">
+      <p className="text-h3 text-ink-strong">Nothing running</p>
+      <p className="mt-2 text-body text-ink-muted">Deploy a model to watch it come up here.</p>
       <p className="mt-4 font-mono text-small text-ink-muted">
-        <code className="rounded-sm bg-canvas px-1.5 py-0.5 text-accent-soft">
+        <code className="rounded bg-canvas px-1.5 py-0.5 text-accent-soft">
           gpu deploy qwen3-0.6b --wait
         </code>
       </p>
