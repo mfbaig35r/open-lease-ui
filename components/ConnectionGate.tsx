@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { connect, HOSTED, useConn } from "@/lib/connection";
 import { useOrigin } from "@/lib/useOrigin";
@@ -10,6 +11,7 @@ import { CopyButton } from "./CopyButton";
 // `gpu ui` is same-origin, so this is a pass-through there.
 export function ConnectionGate({ children }: { children: React.ReactNode }) {
   const { status, baseUrl } = useConn();
+  const pathname = usePathname();
   const tried = useRef(false);
 
   // If a server URL was remembered from a previous visit, try it once on load.
@@ -20,7 +22,9 @@ export function ConnectionGate({ children }: { children: React.ReactNode }) {
     }
   }, [status, baseUrl]);
 
-  if (!HOSTED || status === "connected") return <>{children}</>;
+  // Docs explain how to connect, so they stay readable before a connection exists.
+  const alwaysOpen = pathname?.startsWith("/docs") ?? false;
+  if (!HOSTED || status === "connected" || alwaysOpen) return <>{children}</>;
   return <ConnectScreen />;
 }
 
