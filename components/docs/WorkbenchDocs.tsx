@@ -62,7 +62,7 @@ export function WorkbenchDocs() {
       <div className="space-y-12">
         <Section id="connect" title="Connect to a server">
           <P>
-            The workbench is a thin client over a local <Code>open-lease</Code> server. It never
+            The workbench is a thin client over a local <Code>open-lease</Code>{" "}server. It never
             holds your provider credentials; it just calls the server&rsquo;s REST API and streams
             chat through its OpenAI-compatible proxy.
           </P>
@@ -76,7 +76,7 @@ export function WorkbenchDocs() {
               <Cmd label="On your machine">{corsCmd}</Cmd>
               <P>
                 Needs the API extra: <Code>pip install &apos;open-lease[api]&apos;</Code>. Add{" "}
-                <Code>--api-token</Code> on the server and paste the same token when you connect.
+                <Code>--api-token</Code>{" "}on the server and paste the same token when you connect.
               </P>
             </>
           ) : (
@@ -88,7 +88,7 @@ export function WorkbenchDocs() {
               <Cmd label="Launch">gpu ui</Cmd>
               <P>
                 To point the browser build at a remote server instead, host it and run{" "}
-                <Code>{corsCmd}</Code> on the machine with the GPUs.
+                <Code>{corsCmd}</Code>{" "}on the machine with the GPUs.
               </P>
             </>
           )}
@@ -105,8 +105,8 @@ export function WorkbenchDocs() {
 
         <Section id="deploy" title="Deploy a model">
           <P>
-            Two ways in. <Strong>Catalog model</Strong> picks a validated entry and its recommended
-            GPU. <Strong>Any HF model</Strong> deploys any vLLM-servable Hugging Face repo ad hoc
+            Two ways in. <Strong>Catalog model</Strong>{" "}picks a validated entry and its recommended
+            GPU. <Strong>Any HF model</Strong>{" "}deploys any vLLM-servable Hugging Face repo ad hoc
             (the CLI equivalent is <Code>gpu deploy --hf-repo</Code>); you choose the GPU and,
             optionally, a context length.
           </P>
@@ -145,27 +145,27 @@ export function WorkbenchDocs() {
 
         <Section id="api" title="Call it from code">
           <P>
-            Open any deployment&rsquo;s detail page for an <Strong>API</Strong> panel: the base URL,
+            Open any deployment&rsquo;s detail page for an <Strong>API</Strong>{" "}panel: the base URL,
             the model name, and copy-paste cURL / Python / JavaScript that POST a chat completion.
             It&rsquo;s OpenAI-compatible, so any OpenAI SDK works by pointing its <Code>base_url</Code>{" "}
-            at your server&rsquo;s <Code>/v1</Code> and using the deployment&rsquo;s model name.
+            at your server&rsquo;s <Code>/v1</Code>{" "}and using the deployment&rsquo;s model name.
           </P>
         </Section>
 
         <Section id="security" title="Security &amp; privacy">
           <ul className="space-y-2.5">
             <Li>
-              <Strong>Your data stays local.</Strong> The server URL and token live in this
+              <Strong>Your data stays local.</Strong>{" "}The server URL and token live in this
               browser&rsquo;s storage. Requests go straight to your machine, never through a third
               party.
             </Li>
             <Li>
-              <Strong>The token guards everything.</Strong> If you set <Code>--api-token</Code>,
+              <Strong>The token guards everything.</Strong>{" "}If you set <Code>--api-token</Code>,
               every management and inference route requires it.
             </Li>
             <Li>
-              <Strong>Cross-origin is opt-in.</Strong> A hosted workbench can only reach your server
-              if you start it with <Code>--cors-origin</Code> for that exact page. It&rsquo;s off by
+              <Strong>Cross-origin is opt-in.</Strong>{" "}A hosted workbench can only reach your server
+              if you start it with <Code>--cors-origin</Code>{" "}for that exact page. It&rsquo;s off by
               default and never wildcarded, so a running server isn&rsquo;t exposed to other sites.
             </Li>
           </ul>
