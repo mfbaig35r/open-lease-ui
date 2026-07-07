@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { formatDuration, formatUSD, shortEndpoint } from "@/lib/format";
 import { isBilling } from "@/lib/state";
@@ -32,7 +33,10 @@ export function DeploymentCard({ dep, cost }: { dep: Deployment; cost?: CostReco
     dep.download_progress != null ? Math.round(dep.download_progress * 100) : null;
 
   return (
-    <div className="rounded-sm border border-rule bg-surface p-5 transition-colors hover:border-rule-strong">
+    <Link
+      href={`/deployment?id=${dep.id}`}
+      className="block rounded-sm border border-rule bg-surface p-5 transition-colors hover:border-rule-strong"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-h3 font-semibold text-ink-strong">{dep.model_id}</p>
@@ -80,6 +84,6 @@ export function DeploymentCard({ dep, cost }: { dep: Deployment; cost?: CostReco
           <span>{dep.id}</span>
         )}
       </div>
-    </div>
+    </Link>
   );
 }

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 import type { CostRecord } from "./types";
 
@@ -24,3 +24,57 @@ export function useCosts() {
 }
 
 export type CostIndex = Map<string, CostRecord>;
+
+export function useDeployment(id: string) {
+  return useQuery({
+    queryKey: ["deployment", id],
+    queryFn: () => api.getDeployment(id),
+    refetchInterval: 1000,
+    enabled: !!id,
+  });
+}
+
+export function useEvents(id: string) {
+  return useQuery({
+    queryKey: ["events", id],
+    queryFn: () => api.events(id),
+    refetchInterval: 2000,
+    enabled: !!id,
+  });
+}
+
+export function useLogs(id: string) {
+  return useQuery({
+    queryKey: ["logs", id],
+    queryFn: () => api.logs(id),
+    refetchInterval: 3000,
+    enabled: !!id,
+  });
+}
+
+export function useHealth(id: string) {
+  return useQuery({
+    queryKey: ["health", id],
+    queryFn: () => api.health(id),
+    refetchInterval: 5000,
+    enabled: !!id,
+  });
+}
+
+// Stop / restart / delete for one deployment, invalidating the reads that change on success.
+export function useDeploymentActions(id: string) {
+  const qc = useQueryClient();
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["deployment", id] });
+    qc.invalidateQueries({ queryKey: ["deployments"] });
+    qc.invalidateQueries({ queryKey: ["events", id] });
+  };
+  return {
+    stop: useMutation({ mutationFn: () => api.stop(id), onSuccess: refresh }),
+    restart: useMutation({ mutationFn: () => api.restart(id), onSuccess: refresh }),
+    remove: useMutation({
+      mutationFn: () => api.delete(id),
+      onSuccess: () => qc.invalidateQueries({ queryKey: ["deployments"] }),
+    }),
+  };
+}

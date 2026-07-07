@@ -54,8 +54,58 @@ export interface Deployment {
   download_progress: number | null;
   failure: FailureInfo | null;
   runtime_failures: number;
+  state_history: StateTransition[];
   created_at: string;
   updated_at: string;
+}
+
+export interface StateTransition {
+  from_state: DeploymentState;
+  to_state: DeploymentState;
+  at: string;
+  reason: string;
+}
+
+export type HealthState = "healthy" | "degraded" | "failed" | "booting";
+
+export interface CheckResult {
+  ok: boolean;
+  latency_ms: number | null;
+  detail: string;
+}
+
+export interface HealthStatus {
+  status: HealthState;
+  checks: Record<string, CheckResult>;
+  checked_at: string;
+}
+
+export type EventKind =
+  | "deployment_requested"
+  | "instance_created"
+  | "image_pulled"
+  | "model_download_started"
+  | "model_download_completed"
+  | "server_started"
+  | "health_passed"
+  | "deployment_ready"
+  | "health_degraded"
+  | "deployment_stopped"
+  | "deployment_deleted"
+  | "deployment_failed"
+  | "reconcile_action"
+  | "instance_adopted"
+  | "orphan_detected"
+  | "orphan_destroyed"
+  | "cost_snapshot";
+
+export interface Event {
+  id: string;
+  at: string;
+  correlation_id: string;
+  deployment_id: string | null;
+  kind: EventKind;
+  payload: Record<string, unknown>;
 }
 
 export interface CostRecord {
