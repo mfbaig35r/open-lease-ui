@@ -1,6 +1,6 @@
 "use client";
 
-import { API_URL } from "@/lib/api";
+import { useConn } from "@/lib/connection";
 import { useCosts, useDeployments } from "@/lib/hooks";
 import { isBilling } from "@/lib/state";
 import type { Deployment } from "@/lib/types";
@@ -58,6 +58,8 @@ export function Overview() {
 }
 
 function ConnectionDot({ ok, loading }: { ok: boolean; loading: boolean }) {
+  const { baseUrl } = useConn();
+  const host = baseUrl.replace(/^https?:\/\//, "") || "same-origin";
   return (
     <span className="inline-flex items-center gap-2 font-mono text-label tracking-[0.04em] text-ink-muted uppercase">
       <span
@@ -69,7 +71,7 @@ function ConnectionDot({ ok, loading }: { ok: boolean; loading: boolean }) {
               : "h-1.5 w-1.5 rounded-full bg-danger"
         }
       />
-      {API_URL.replace(/^https?:\/\//, "")}
+      {host}
     </span>
   );
 }
@@ -80,10 +82,9 @@ function Disconnected({ message }: { message: string }) {
       <p className="text-h3 text-ink-strong">Cannot reach the API</p>
       <p className="mt-2 max-w-[52ch] text-body text-ink-muted">{message}</p>
       <p className="mt-4 font-mono text-small text-ink-muted">
-        Start the backend with{" "}
-        <code className="rounded bg-canvas px-1.5 py-0.5 text-accent-soft">gpu serve</code>, then set{" "}
-        <code className="rounded bg-canvas px-1.5 py-0.5 text-accent-soft">NEXT_PUBLIC_API_URL</code>{" "}
-        if it is not on {API_URL}.
+        Make sure the backend is running (
+        <code className="rounded bg-canvas px-1.5 py-0.5 text-accent-soft">gpu serve</code>) and, if
+        it moved, update the server URL in the connection settings.
       </p>
     </div>
   );

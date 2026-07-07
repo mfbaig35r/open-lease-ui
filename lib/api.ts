@@ -1,4 +1,7 @@
 // Typed client for the open-lease REST API. Talks HTTP only; no core imports (Phase 4 boundary).
+// Base URL + token are read from the runtime connection store per call, so a hosted workbench can
+// point at whichever local server the user connected to.
+import { getConn } from "./connection";
 import type {
   CostRecord,
   Deployment,
@@ -10,12 +13,6 @@ import type {
   ProviderInfo,
 } from "./types";
 
-export const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
-).replace(/\/$/, "");
-
-const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
-
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -26,17 +23,17 @@ export class ApiError extends Error {
   }
 }
 
-async function get<T>(path: string): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(`${API_URL}${path}`, {
-      headers: API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : undefined,
-      cache: "no-store",
-    });
-  } catch {
-    // Network-level failure: the API is not reachable (gpu serve not running, wrong URL).
-    throw new ApiError(`cannot reach the API at ${API_URL}`, 0);
-  }
+function base(): string {
+  return getConn().baseUrl.replace(/\/$/, "");
+}
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> | undefined {
+  const { token } = getConn();
+  const headers = { ...(extra ?? {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  return Object.keys(headers).length ? headers : undefined;
+}
+
+async function unwrap<T>(res: Response): Promise<T> {
   if (!res.ok) {
     // The API returns { error: "<one sentence>" } on non-2xx; surface it verbatim.
     const sentence = await res
@@ -48,15 +45,23 @@ async function get<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function get<T>(path: string): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${base()}${path}`, { headers: authHeaders(), cache: "no-store" });
+  } catch {
+    // Network-level failure: the API is not reachable (gpu serve not running, wrong URL, no CORS).
+    throw new ApiError(`cannot reach the API at ${base() || "the configured server"}`, 0);
+  }
+  return unwrap<T>(res);
+}
+
 async function send<T>(method: "POST" | "DELETE", path: string): Promise<T | null> {
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, {
-      method,
-      headers: API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : undefined,
-    });
+    res = await fetch(`${base()}${path}`, { method, headers: authHeaders() });
   } catch {
-    throw new ApiError(`cannot reach the API at ${API_URL}`, 0);
+    throw new ApiError(`cannot reach the API at ${base() || "the configured server"}`, 0);
   }
   if (!res.ok) {
     const sentence = await res
@@ -71,25 +76,15 @@ async function send<T>(method: "POST" | "DELETE", path: string): Promise<T | nul
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, {
+    res = await fetch(`${base()}${path}`, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        ...(API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
-      },
+      headers: authHeaders({ "content-type": "application/json" }),
       body: JSON.stringify(body),
     });
   } catch {
-    throw new ApiError(`cannot reach the API at ${API_URL}`, 0);
+    throw new ApiError(`cannot reach the API at ${base() || "the configured server"}`, 0);
   }
-  if (!res.ok) {
-    const sentence = await res
-      .json()
-      .then((b) => b?.error as string | undefined)
-      .catch(() => undefined);
-    throw new ApiError(sentence ?? `request failed (${res.status})`, res.status);
-  }
-  return res.json() as Promise<T>;
+  return unwrap<T>(res);
 }
 
 export const api = {

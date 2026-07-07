@@ -1,15 +1,10 @@
-import { useSyncExternalStore } from "react";
-import { API_URL } from "./api";
+"use client";
 
-// The base a client would call. When the UI is served by `gpu serve` (embedded), API_URL is empty
-// and the workbench origin *is* the proxy, so use window.location.origin. useSyncExternalStore keeps
-// server/hydration snapshots consistent (no hydration mismatch, no set-state-in-effect).
-const subscribe = () => () => {};
+import { useConn } from "./connection";
 
+// The base a client would call: the connected server, or the current origin when embedded.
 export function useApiBase(): string {
-  return useSyncExternalStore(
-    subscribe,
-    () => (API_URL || window.location.origin).replace(/\/$/, ""),
-    () => API_URL,
-  );
+  const { baseUrl } = useConn();
+  if (baseUrl) return baseUrl.replace(/\/$/, "");
+  return typeof window !== "undefined" ? window.location.origin : "";
 }

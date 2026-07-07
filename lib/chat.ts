@@ -1,6 +1,5 @@
-import { ApiError, API_URL } from "./api";
-
-const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
+import { ApiError } from "./api";
+import { getConn } from "./connection";
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -16,20 +15,22 @@ export async function streamChat(opts: {
   onDelta: (text: string) => void;
   signal?: AbortSignal;
 }): Promise<void> {
+  const { baseUrl, token } = getConn();
+  const base = baseUrl.replace(/\/$/, "");
   let res: Response;
   try {
-    res = await fetch(`${API_URL}/v1/chat/completions`, {
+    res = await fetch(`${base}/v1/chat/completions`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        ...(API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ model: opts.model, messages: opts.messages, stream: true }),
       signal: opts.signal,
     });
   } catch (e) {
     if ((e as Error).name === "AbortError") return;
-    throw new ApiError(`cannot reach the API at ${API_URL}`, 0);
+    throw new ApiError(`cannot reach the API at ${base || "the configured server"}`, 0);
   }
   if (!res.ok || !res.body) {
     const sentence = await res
