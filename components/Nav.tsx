@@ -9,7 +9,9 @@ const ITEMS: { label: string; href: string | null }[] = [
   { label: "Deploy", href: "/deploy" },
   { label: "Playground", href: "/playground" },
   { label: "Docs", href: "/docs" },
-  { label: "Costs", href: null },
+  // The embedded server serves the API on the same origin, and the API owns GET /costs (and
+  // /usage); route the UI page to /spend so it isn't shadowed (mirrors /deployment vs /deployments).
+  { label: "Costs", href: "/spend" },
 ];
 
 export function Nav() {

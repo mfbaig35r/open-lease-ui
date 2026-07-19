@@ -25,6 +25,14 @@ export function useCosts() {
 
 export type CostIndex = Map<string, CostRecord>;
 
+export function useUsage() {
+  return useQuery({
+    queryKey: ["usage"],
+    queryFn: () => api.usage(),
+    refetchInterval: 3000,
+  });
+}
+
 export function useDeployment(id: string) {
   return useQuery({
     queryKey: ["deployment", id],

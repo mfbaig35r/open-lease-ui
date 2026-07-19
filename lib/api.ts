@@ -11,6 +11,7 @@ import type {
   HealthStatus,
   ModelSpec,
   ProviderInfo,
+  UsageSummary,
 } from "./types";
 
 export class ApiError extends Error {
@@ -95,6 +96,7 @@ export const api = {
   logs: (id: string, tail = 200) => get<string[]>(`/deployments/${id}/logs?tail=${tail}`),
   health: (id: string) => get<HealthStatus>(`/deployments/${id}/health`),
   costs: () => get<CostRecord[]>(`/costs`),
+  usage: () => get<UsageSummary[]>(`/usage`),
   models: () => get<ModelSpec[]>(`/models`),
   providers: () => get<ProviderInfo[]>(`/providers`),
   availability: (params: { model_id?: string; gpu?: string }) => {
