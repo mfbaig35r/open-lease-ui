@@ -116,6 +116,20 @@ export interface CostRecord {
   accrued_usd: number;
 }
 
+export interface UsageSummary {
+  deployment_id: string;
+  model_id: string;
+  requests: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  accrued_usd: number;
+  uptime_seconds: number;
+  // computed by the API and serialized
+  total_tokens: number;
+  tokens_per_sec: number;
+  cost_per_mtok: number | null;
+}
+
 export interface ModelSpec {
   id: string;
   hf_repo: string;
