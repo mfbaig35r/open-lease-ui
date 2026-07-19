@@ -56,6 +56,12 @@ function ConnectScreen() {
         </p>
       </div>
 
+      <p className="mt-4 text-label text-ink-muted">
+        On first connect, Chrome asks permission for this page to reach your local network. Allow it:
+        the request only goes to the server on your machine. If a running server still reads as
+        unreachable, that permission is usually why.
+      </p>
+
       <div className="mt-4">
         <ConfigPanel defaultOpen />
       </div>

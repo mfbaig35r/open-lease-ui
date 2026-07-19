@@ -103,7 +103,7 @@ export async function connect(): Promise<void> {
       cache: "no-store",
     });
     if (res.status === 401) {
-      setConn({ status: "error", error: "unauthorized — check the API token" });
+      setConn({ status: "error", error: "unauthorized: check the API token" });
       return;
     }
     if (!res.ok) {
@@ -112,7 +112,13 @@ export async function connect(): Promise<void> {
     }
     setConn({ status: "connected", error: null });
   } catch {
-    setConn({ status: "error", error: `cannot reach ${base || "the server"}` });
+    // A thrown fetch is indistinguishable at the JS layer between "server not running" and a
+    // browser blocking the request to loopback (Chrome's Local Network Access prompt). Name both so
+    // a user whose server IS up but who has not allowed local network access is not misled.
+    setConn({
+      status: "error",
+      error: `cannot reach ${base || "the server"}. Check the server is running, and allow local network access if the browser asks.`,
+    });
   }
 }
 
