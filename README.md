@@ -32,9 +32,17 @@ open-lease core imports: it knows only the REST endpoints and the `/v1/*` proxy.
 
 ## How this ships
 
-This is never published on its own. `pnpm bundle` builds a static export into
-`open-lease/src/gpu_orchestrator/web`, and open-lease's publish workflow does the same build so the
-released wheel serves the workbench at `gpu ui`.
+Two ways, both automatic.
+
+**Bundled into the open-lease wheel**, which is how `gpu ui` serves it locally. `pnpm bundle` builds a
+static export into `open-lease/src/gpu_orchestrator/web`, and open-lease's publish workflow does the
+same build at release time.
+
+**Hosted at [workbench.openlease.canonicalresearch.dev](https://workbench.openlease.canonicalresearch.dev)**,
+deployed by Vercel's git integration: a push to `main` builds `pnpm build:hosted` and goes to
+production, and a pull request gets a preview deployment. Nothing to run by hand. The hosted build sets
+`NEXT_PUBLIC_WORKBENCH_HOSTED=1`, so that copy starts unconnected and asks the visitor to point it at
+their own local server (see `lib/connection.ts`); the bundled copy assumes same-origin.
 
 That workflow builds this repo **at the release's own tag**: open-lease `v0.5.0` bundles the workbench
 tagged `v0.5.0` here. So versions move in lockstep and the backend tag names the workbench, with
