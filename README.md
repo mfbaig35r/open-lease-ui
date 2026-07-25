@@ -39,10 +39,14 @@ static export into `open-lease/src/gpu_orchestrator/web`, and open-lease's publi
 same build at release time.
 
 **Hosted at [workbench.openlease.canonicalresearch.dev](https://workbench.openlease.canonicalresearch.dev)**,
-deployed by Vercel's git integration: a push to `main` builds `pnpm build:hosted` and goes to
-production, and a pull request gets a preview deployment. Nothing to run by hand. The hosted build sets
-`NEXT_PUBLIC_WORKBENCH_HOSTED=1`, so that copy starts unconnected and asks the visitor to point it at
-their own local server (see `lib/connection.ts`); the bundled copy assumes same-origin.
+deployed on a version tag by `.github/workflows/deploy.yml`, so what is live matches a release rather
+than whatever last landed on `main`. Pushing to `main` deliberately does not deploy
+(`git.deploymentEnabled` in `vercel.json`); pull requests still get preview deployments from Vercel's
+git integration. `workflow_dispatch` covers a hosted-only fix that should go live without a release.
+
+The hosted build sets `NEXT_PUBLIC_WORKBENCH_HOSTED=1`, so that copy starts unconnected and asks the
+visitor to point it at their own local server (see `lib/connection.ts`); the bundled copy assumes
+same-origin.
 
 That workflow builds this repo **at the release's own tag**: open-lease `v0.5.0` bundles the workbench
 tagged `v0.5.0` here. So versions move in lockstep and the backend tag names the workbench, with

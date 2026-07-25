@@ -1,0 +1,63 @@
+name: Deploy hosted workbench
+
+# A version tag deploys the hosted workbench to production, so what is live matches a release rather
+# than whatever landed on main. Vercel's git integration cannot do this on its own: it deploys branch
+# pushes only (verified: pushing a tag produces no deployment), so `git.deploymentEnabled.main` in
+# vercel.json turns the push trigger off and this workflow provides the tag trigger.
+#
+# It deploys the checked-out tag, so the live site is exactly the tagged commit, not main's head.
+# Preview deployments on pull requests still come from the git integration and are unaffected.
+on:
+  push:
+    tags: ["v*"]
+  # For a hosted-only fix that should go live without cutting a version.
+  workflow_dispatch:
+
+concurrency:
+  group: hosted-workbench
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      # Identifiers, not secrets: they name the Vercel project the way .vercel/project.json does
+      # locally (that file is gitignored, so they are inlined here).
+      VERCEL_ORG_ID: team_XsAycvJIGH8nbDDOrs0pm4Z8
+      VERCEL_PROJECT_ID: prj_M8pobEIdkc3LJljT06CQqvS1KAit
+    steps:
+      - uses: actions/checkout@v4
+
+      # A missing token otherwise surfaces as an opaque CLI auth failure after the upload.
+      - name: Check for a deploy token
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error title=No VERCEL_TOKEN::Mint a token at https://vercel.com/account/tokens and add it as the VERCEL_TOKEN repository secret (gh secret set VERCEL_TOKEN). Until then the hosted workbench only updates via a manual \`vercel --prod\`."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install the Vercel CLI
+        run: npm install --global vercel@latest
+
+      # Source upload, so Vercel builds it with vercel.json's buildCommand (pnpm build:hosted). The
+      # deployed commit is this tag's, which is the whole point of the tag trigger.
+      - name: Deploy to production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prod --yes --token "$VERCEL_TOKEN" | tee deploy.txt
+
+      - name: Record what went live
+        run: |
+          {
+            echo "### Hosted workbench"
+            echo "- tag: \`${{ github.ref_name }}\`"
+            echo "- commit: \`${{ github.sha }}\`"
+            echo "- deployment: $(tail -1 deploy.txt)"
+          } >> "$GITHUB_STEP_SUMMARY"
