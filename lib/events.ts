@@ -19,6 +19,10 @@ export const EVENT_META: Record<EventKind, { label: string; tone: Tone }> = {
   orphan_detected: { label: "Orphan detected", tone: "danger" },
   orphan_destroyed: { label: "Orphan reaped", tone: "danger" },
   cost_snapshot: { label: "Cost snapshot", tone: "muted" },
+  budget_warning: { label: "Budget warning", tone: "warn" },
+  budget_exceeded: { label: "Budget exceeded", tone: "danger" },
+  budget_released: { label: "Budget window reset", tone: "accent" },
+  autoscaled: { label: "Autoscaled", tone: "accent" },
 };
 
 // A short human summary from the event payload (the interesting bits: the reconcile action, the
@@ -28,6 +32,11 @@ export function eventDetail(e: Event): string {
   if (typeof p.action === "string") {
     const rf = typeof p.runtime_failures === "number" ? ` (${p.runtime_failures})` : "";
     return String(p.action).replace(/_/g, " ") + rf;
+  }
+  // A budget event carries where spend stood when it fired, which is the whole reason to read it.
+  if (typeof p.spent_usd === "number" && typeof p.limit_usd === "number") {
+    const pct = typeof p.fraction === "number" ? ` (${Math.round(p.fraction * 100)}%)` : "";
+    return `$${p.spent_usd.toFixed(2)} of $${p.limit_usd.toFixed(2)}${pct}`;
   }
   if (typeof p.error === "string") return p.error;
   if (typeof p.instance === "string") return p.instance;

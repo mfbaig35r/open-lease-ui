@@ -11,6 +11,7 @@ const SECTIONS = [
   { id: "connect", label: "Connect" },
   { id: "overview", label: "Overview" },
   { id: "deploy", label: "Deploy" },
+  { id: "capacity", label: "Capacity" },
   { id: "playground", label: "Playground" },
   { id: "states", label: "States" },
   { id: "api", label: "Call it from code" },
@@ -114,6 +115,31 @@ export function WorkbenchDocs() {
             The form shows the hourly rate and whether a data center has capacity right now. Deploy
             is non-blocking: a background daemon drives the pod to Ready. If none is running, start
             one with <Code>gpu up</Code>.
+          </P>
+        </Section>
+
+        <Section id="capacity" title="Capacity: ceilings, schedules, replicas">
+          <P>
+            A GPU left running is an open meter, so capacity has controls. The{" "}
+            <Strong>Capacity</Strong>{" "}page holds the account-wide ones. A{" "}
+            <Strong>spend ceiling</Strong>{" "}caps a daily or monthly window, for the whole account or
+            one deployment; on exceed it can warn, refuse new deploys, or tear the in-scope
+            deployments down for the rest of the window. <Strong>Replicas</Strong>{" "}sets how many
+            deployments serve a model (the proxy load-balances across them), and an autoscaling policy
+            keeps that count matched to the served request rate.
+          </P>
+          <P>
+            Per-deployment controls live on a deployment&rsquo;s own page. A{" "}
+            <Strong>schedule</Strong>{" "}makes it run only inside chosen windows, so nights and weekends
+            cost nothing: pick the days, the hours, and the timezone. A{" "}
+            <Strong>concurrency limit</Strong>{" "}caps in-flight requests at the proxy, with an optional
+            queue, so a traffic spike gets a 429 instead of piling onto the GPU.
+          </P>
+          <P>
+            All of it is enforced by the daemon and the proxy, not by this page, so a ceiling holds the
+            same whether you set it here, from the CLI, or from an agent over MCP. A schedule or an
+            autoscaling policy needs a daemon running (<Code>gpu up</Code>); the workbench says so
+            when it sees a deployment that is not obeying its schedule.
           </P>
         </Section>
 

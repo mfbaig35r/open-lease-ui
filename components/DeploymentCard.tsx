@@ -3,10 +3,49 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { formatDuration, formatUSD, shortEndpoint } from "@/lib/format";
+import { postureAt } from "@/lib/schedule";
 import { isBilling } from "@/lib/state";
 import type { CostRecord, Deployment } from "@/lib/types";
 import { useNow } from "@/lib/useNow";
 import { StateBadge } from "./StateBadge";
+
+/** Why a deployment is in the state it is in, when a policy is the reason. A stopped pod with no
+ *  explanation reads as a fault; "scheduled off" or "budget hold" reads as the plan working. */
+function Chips({ dep }: { dep: Deployment }) {
+  // Its own clock: the card's `now` freezes for a terminal deployment (the cost meter holds still),
+  // but a scheduled-off pod that comes back on at 06:00 must not keep claiming it is off.
+  const now = useNow(dep.schedule != null);
+  const posture = dep.schedule ? postureAt(dep.schedule, now) : null;
+  const chips: { text: string; tone: string }[] = [];
+
+  if (dep.budget_hold) chips.push({ text: "budget hold", tone: "text-danger" });
+  if (posture != null) {
+    // A schedule the deployment is not obeying means nothing is driving it (usually no daemon), so
+    // that reads amber rather than muted: the plan is set but not in force.
+    const obeyed = posture === "on" ? isBilling(dep.observed_state) : !isBilling(dep.observed_state);
+    chips.push({
+      text: `scheduled ${posture}`,
+      tone: !obeyed ? "text-warn" : posture === "on" ? "text-accent-soft" : "text-ink-muted",
+    });
+  } else if (dep.schedule) {
+    chips.push({ text: "scheduled", tone: "text-ink-muted" });
+  }
+  if (dep.max_concurrency != null) {
+    chips.push({ text: `max ${dep.max_concurrency}`, tone: "text-ink-muted" });
+  }
+  if (chips.length === 0) return null;
+
+  return (
+    <p className="mt-2 flex flex-wrap items-center gap-x-2 font-mono text-label tracking-[0.04em] uppercase">
+      {chips.map((c, i) => (
+        <span key={c.text} className={c.tone}>
+          {i > 0 && <span className="mr-2 text-rule-strong">·</span>}
+          {c.text}
+        </span>
+      ))}
+    </p>
+  );
+}
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
@@ -46,6 +85,8 @@ export function DeploymentCard({ dep, cost }: { dep: Deployment; cost?: CostReco
         </div>
         <StateBadge state={dep.observed_state} />
       </div>
+
+      <Chips dep={dep} />
 
       {pct != null && dep.observed_state !== "ready" && (
         <div className="mt-4">

@@ -3,14 +3,22 @@
 // point at whichever local server the user connected to.
 import { getConn } from "./connection";
 import type {
+  AutoscaleBody,
+  AutoscalePolicy,
+  Budget,
+  BudgetBody,
+  BudgetStatus,
   CostRecord,
   Deployment,
   DeployBody,
   Event,
   GpuAvailability,
   HealthStatus,
+  LimitsBody,
   ModelSpec,
   ProviderInfo,
+  ScaleBody,
+  Schedule,
   UsageSummary,
 } from "./types";
 
@@ -74,11 +82,11 @@ async function send<T>(method: "POST" | "DELETE", path: string): Promise<T | nul
   return res.status === 204 ? null : (res.json() as Promise<T>);
 }
 
-async function postJson<T>(path: string, body: unknown): Promise<T> {
+async function withJson<T>(method: "POST" | "PUT", path: string, body: unknown): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${base()}${path}`, {
-      method: "POST",
+      method,
       headers: authHeaders({ "content-type": "application/json" }),
       body: JSON.stringify(body),
     });
@@ -87,6 +95,9 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   }
   return unwrap<T>(res);
 }
+
+const postJson = <T>(path: string, body: unknown) => withJson<T>("POST", path, body);
+const putJson = <T>(path: string, body: unknown) => withJson<T>("PUT", path, body);
 
 export const api = {
   listDeployments: (includeStopped = false) =>
@@ -109,4 +120,20 @@ export const api = {
   stop: (id: string) => send<Deployment>("POST", `/deployments/${id}/stop`),
   restart: (id: string) => send<Deployment>("POST", `/deployments/${id}/restart`),
   delete: (id: string) => send<null>("DELETE", `/deployments/${id}`),
+
+  // Capacity envelope. Schedules and limits belong to one deployment; budgets, autoscaling, and
+  // replica count are account- or model-scoped, so they are their own resources.
+  setSchedule: (id: string, body: Schedule) =>
+    putJson<Deployment>(`/deployments/${id}/schedule`, body),
+  clearSchedule: (id: string) => send<Deployment>("DELETE", `/deployments/${id}/schedule`),
+  setLimits: (id: string, body: LimitsBody) => putJson<Deployment>(`/deployments/${id}/limits`, body),
+  clearLimits: (id: string) => send<Deployment>("DELETE", `/deployments/${id}/limits`),
+  scale: (body: ScaleBody) => postJson<Deployment[]>(`/scale`, body),
+  budgets: () => get<BudgetStatus[]>(`/budgets`),
+  createBudget: (body: BudgetBody) => postJson<Budget>(`/budgets`, body),
+  removeBudget: (budgetId: string) => send<null>("DELETE", `/budgets/${budgetId}`),
+  autoscale: () => get<AutoscalePolicy[]>(`/autoscale`),
+  setAutoscale: (modelId: string, body: AutoscaleBody) =>
+    putJson<AutoscalePolicy>(`/autoscale/${modelId}`, body),
+  removeAutoscale: (modelId: string) => send<null>("DELETE", `/autoscale/${modelId}`),
 };

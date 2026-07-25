@@ -40,6 +40,53 @@ export interface FailureInfo {
   attempts: number;
 }
 
+// --- capacity envelope (open-lease plan tiers A + B) ---------------------------------
+
+export type Posture = "on" | "off";
+
+/** One window of a schedule. `days` is 0 (Mon) through 6 (Sun); `start` later than `end` wraps past
+ *  midnight. Times are wall-clock "HH:MM" in the schedule's own timezone. */
+export interface ScheduleRule {
+  days: number[];
+  start: string;
+  end: string;
+  posture: Posture;
+}
+
+export interface Schedule {
+  timezone: string;
+  default_posture: Posture;
+  rules: ScheduleRule[];
+}
+
+export type BudgetWindow = "daily" | "monthly";
+export type BudgetAction = "warn" | "stop" | "block_new";
+
+export interface Budget {
+  id: string;
+  deployment_id: string | null; // null = account-wide
+  window: BudgetWindow;
+  limit_usd: number;
+  on_exceed: BudgetAction;
+  warn_fraction: number;
+}
+
+/** A budget plus what it has spent so far this window (`GET /budgets`). */
+export interface BudgetStatus {
+  budget: Budget;
+  spent_usd: number;
+  fraction: number;
+  over_warn: boolean;
+  exceeded: boolean;
+}
+
+export interface AutoscalePolicy {
+  model_id: string;
+  min_replicas: number;
+  max_replicas: number;
+  target_rpm_per_replica: number;
+}
+
 export interface Deployment {
   id: string;
   model_id: string;
@@ -55,6 +102,13 @@ export interface Deployment {
   failure: FailureInfo | null;
   runtime_failures: number;
   state_history: StateTransition[];
+  // Capacity envelope. `schedule` null is manual control; `budget_hold` is a deployment torn down by
+  // a budget ceiling (it explains an otherwise mysterious stop); `max_concurrency` null is unlimited.
+  schedule: Schedule | null;
+  budget_hold: boolean;
+  max_concurrency: number | null;
+  max_queue: number;
+  queue_timeout_s: number;
   created_at: string;
   updated_at: string;
 }
@@ -97,7 +151,11 @@ export type EventKind =
   | "instance_adopted"
   | "orphan_detected"
   | "orphan_destroyed"
-  | "cost_snapshot";
+  | "cost_snapshot"
+  | "budget_warning"
+  | "budget_exceeded"
+  | "budget_released"
+  | "autoscaled";
 
 export interface Event {
   id: string;
@@ -168,4 +226,33 @@ export interface DeployBody {
   image?: string;
   disk?: number;
   wait?: boolean;
+}
+
+// Request bodies for the capacity routes. Schedules post the domain model itself; the rest mirror
+// the API's small DTOs (their Orchestrator methods take keyword arguments, not one model).
+
+export interface LimitsBody {
+  max_concurrency: number;
+  max_queue?: number;
+  queue_timeout_s?: number;
+}
+
+export interface ScaleBody {
+  model_id: string;
+  replicas: number;
+  wait?: boolean;
+}
+
+export interface BudgetBody {
+  limit_usd: number;
+  window?: BudgetWindow;
+  on_exceed?: BudgetAction;
+  deployment_id?: string | null;
+  warn_fraction?: number;
+}
+
+export interface AutoscaleBody {
+  max_replicas: number;
+  target_rpm_per_replica: number;
+  min_replicas?: number;
 }

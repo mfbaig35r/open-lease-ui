@@ -9,6 +9,7 @@ import { useCosts, useDeployment, useDeploymentActions } from "@/lib/hooks";
 import { isBilling } from "@/lib/state";
 import { useNow } from "@/lib/useNow";
 import { StateBadge } from "../StateBadge";
+import { CapacityPanel } from "./CapacityPanel";
 import { EndpointDocs } from "./EndpointDocs";
 import { EventFeed } from "./EventFeed";
 import { HealthPanel } from "./HealthPanel";
@@ -145,6 +146,7 @@ export function DeploymentDetail({ id }: { id: string }) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
+          <CapacityPanel dep={dep} />
           <StateTimeline history={dep.state_history} now={now} />
           <HealthPanel id={id} />
         </div>

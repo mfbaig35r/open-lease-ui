@@ -46,6 +46,11 @@ core.
 4. **Playground** (Slice 4): pick any READY deployment, chat and stream through `/v1/*`. The "use the
    model you just spun up" moment.
 5. **Costs / catalog / providers**: the supporting reads.
+6. **Capacity** (Slice 5): the capacity envelope (open-lease plan tiers A + B). Account-scoped
+   controls (spend ceilings, replica count, autoscaling policies) on a `/capacity` page;
+   deployment-scoped controls (an operating schedule, a concurrency limit) on the deployment detail
+   page, where the thing they apply to is already on screen. Cards carry a one-line reason when a
+   policy explains their state (scheduled off, budget hold, a concurrency cap).
 
 ## Build slices
 
@@ -55,6 +60,11 @@ core.
 - **Slice 2**: deployment detail (timeline, event feed, logs, health).
 - **Slice 3**: the Deploy wizard.
 - **Slice 4**: the chat Playground.
+- **Slice 5**: Capacity. Schedules, concurrency limits, spend ceilings, replicas, autoscaling, over the
+  REST routes added for interface parity. The client-side schedule resolver in `lib/schedule.ts`
+  mirrors `core/schedule.py`'s `resolve_posture` and must keep matching it: it is presentation only
+  (the daemon owns enforcement), used to say "on now / off now" and to flag a schedule that nothing is
+  applying.
 - **Later**: static export + the `gpu ui` launcher in open-lease; optional SSE stream.
 
 ## Design

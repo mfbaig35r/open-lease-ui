@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 const ITEMS: { label: string; href: string | null }[] = [
   { label: "Overview", href: "/" },
   { label: "Deploy", href: "/deploy" },
+  { label: "Capacity", href: "/capacity" },
   { label: "Playground", href: "/playground" },
   { label: "Docs", href: "/docs" },
   // The embedded server serves the API on the same origin, and the API owns GET /costs (and
