@@ -36,7 +36,9 @@ This is never published on its own. `pnpm bundle` builds a static export into
 `open-lease/src/gpu_orchestrator/web`, and open-lease's publish workflow does the same build so the
 released wheel serves the workbench at `gpu ui`.
 
-That build uses the ref in open-lease's `OPEN_LEASE_UI_REF` repository variable, pinned to a tag here,
-so an open-lease version maps to exactly one workbench. Versions therefore move in lockstep: tag this
-repo `vX.Y.Z`, point the pin at it, then cut open-lease `vX.Y.Z`. The full order is in
+That workflow builds this repo **at the release's own tag**: open-lease `v0.5.0` bundles the workbench
+tagged `v0.5.0` here. So versions move in lockstep and the backend tag names the workbench, with
+nothing to keep in step by hand. Tag this repo `vX.Y.Z` before cutting open-lease `vX.Y.Z`, or the
+release fails asking for the tag. `scripts/release.py` in open-lease does both in order; the details
+are in
 [open-lease/CONTRIBUTING.md](https://github.com/mfbaig35r/open-lease/blob/main/CONTRIBUTING.md).
