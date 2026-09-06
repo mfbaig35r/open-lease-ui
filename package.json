@@ -9,7 +9,8 @@
     "build:hosted": "NEXT_PUBLIC_WORKBENCH_HOSTED=1 next build",
     "bundle": "pnpm build:embedded && rm -rf ../open-lease/src/gpu_orchestrator/web && cp -r out ../open-lease/src/gpu_orchestrator/web",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "og:card": "rm -f app/opengraph-image.tsx && cp scripts/opengraph-card.tsx app/opengraph-image.tsx && pnpm build:hosted && cp out/opengraph-image app/opengraph-image.png && rm -f app/opengraph-image.tsx"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",
